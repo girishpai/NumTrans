@@ -9,6 +9,7 @@ import org.opencv.android.OpenCVLoader;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "NumTrans";
+    private DigitDetector mDetector = new DigitDetector();
 
     //Initialize open cv
     static {
@@ -24,5 +25,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        boolean ret = mDetector.setup(this);
+        if (!ret) {
+            Log.i(TAG, "Detector setup failed");
+            return;
+        }
+
+
     }
 }
