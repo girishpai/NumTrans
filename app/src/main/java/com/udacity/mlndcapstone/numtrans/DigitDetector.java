@@ -25,8 +25,6 @@ public class DigitDetector {
         if(assetManager == null) {
             Log.d("digitDetect","AssetManager Null");
         }
-        // model from beginner tutorial
-        //int ret = init(assetManager, "file:///android_asset/beginner-graph.pb");
 
         // model from expert tutorial
         int ret = init(assetManager, "file:///android_asset/expert-graph.pb");
