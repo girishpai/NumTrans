@@ -17,6 +17,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by girishpai on 11/4/16.
@@ -24,6 +25,9 @@ import java.util.ArrayList;
 public class ImageProcessor {
 
     private static final String TAG = "ImageProcessor";
+    ArrayList<RoiObject> mRoiImages = new ArrayList<RoiObject>(50);
+    String mResultText = "";
+    NumberToWordConv mNumConverter = new NumberToWordConv();
 
     public Mat preProcessImage(Bitmap image) {
         Size sz = new Size(640, 480);
@@ -39,9 +43,9 @@ public class ImageProcessor {
         Mat imgToProcess = new Mat (image.getWidth(), image.getHeight(), CvType.CV_8UC1);
         Mat imgToProcessCanny = new Mat (image.getWidth(), image.getHeight(), CvType.CV_8UC1);
         Utils.bitmapToMat(image,imgToProcess);
-        Imgproc.resize(imgToProcess, imgToProcess, sz);
-        Imgproc.resize(origImageMatrix, origImageMatrix, sz);
-        Imgproc.resize(tempImageMat, tempImageMat, sz);
+        Imgproc.resize(imgToProcess, imgToProcess, sz,0,0,Imgproc.INTER_NEAREST);
+        Imgproc.resize(origImageMatrix, origImageMatrix, sz,0,0,Imgproc.INTER_NEAREST);
+        Imgproc.resize(tempImageMat, tempImageMat, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.cvtColor(imgToProcess, imgToProcess, Imgproc.COLOR_BGR2GRAY);
         Imgproc.GaussianBlur(imgToProcess,imgToProcess,new Size(3,3),0);
 
@@ -87,7 +91,8 @@ public class ImageProcessor {
             mean = matMean.toArray()[0];
             std = matStd.toArray()[0];
 
-            Imgproc.threshold(roiImage, roiImage, mean + std / 2.0, 255, Imgproc.THRESH_BINARY);
+            //Imgproc.threshold(roiImage, roiImage, mean + std / 2.0, 255, Imgproc.THRESH_BINARY);
+            Imgproc.threshold(roiImage, roiImage,mean + std,255, Imgproc.THRESH_BINARY);
             roiImage.copyTo(aux);
         }
 
@@ -124,7 +129,9 @@ public class ImageProcessor {
                 rects.add(rect);
             }
 
+
         }
+        filterRectangles(rects);
         return rects;
     }
 
@@ -142,6 +149,11 @@ public class ImageProcessor {
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
             // Minimum size allowed for consideration
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
+
+            if (contourArea < 500.0) {
+                continue;
+            }
+            Log.d(TAG,"CountourAra = " + contourArea);
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
@@ -185,10 +197,36 @@ public class ImageProcessor {
             Imgproc.threshold(roiImage, roiImage, mean, 255, Imgproc.THRESH_BINARY_INV);
             Bitmap tempImage = Bitmap.createBitmap(roiImage.cols(), roiImage.rows(), conf);
             Utils.matToBitmap(roiImage, tempImage);
-
+            RoiObject roiObject = new RoiObject(xCord,tempImage);
+            mRoiImages.add(roiObject);
         }
 
+
+
+        Collections.sort(mRoiImages);
+
+        int max = (mRoiImages.size() > 9) ? 9 : mRoiImages.size();
+        for (int i = 0; i < max; i++) {
+            RoiObject roi = mRoiImages.get(i);
+            int [] pixels = getPixelData(roi.bmp);
+
+            int digit = digitDetector.detectDigit(pixels);
+
+            Log.i(TAG, "digit =" + digit);
+
+            mResultText = mResultText.concat("" + digit);
+        }
+
+        int number = Integer.parseInt(mResultText);
+        Log.i(TAG,"Number = :" + number);
+        mResultText = mNumConverter.numberToWords(number);
+
+
         return origImageMatrix;
+    }
+
+    public String getResultText() {
+        return this.mResultText;
     }
 
     private int [] getPixelData(Bitmap tempImage) {
@@ -205,5 +243,24 @@ public class ImageProcessor {
         }
         return retPixels;
 
+    }
+
+    private ArrayList<Rect> filterRectangles(ArrayList<Rect> rects) {
+        double sum = 0.0;
+        double mean = 0.0;
+        for (int i = 0; i < rects.size(); i++) {
+            sum += rects.get(i).height;
+        }
+
+        mean = sum / rects.size();
+
+        Log.d(TAG, "Mean = " + mean);
+
+        for (int i = 0; i < rects.size(); i++) {
+            if (rects.get(i).height < (mean - 5.0)) {
+                rects.remove(i);
+            }
+        }
+        return rects;
     }
 }

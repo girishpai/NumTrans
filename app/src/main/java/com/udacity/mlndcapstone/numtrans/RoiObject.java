@@ -5,11 +5,13 @@ import android.graphics.Bitmap;
 /**
  * Created by girishpai on 11/4/16.
  */
-public class RoiObject {
+public class RoiObject implements Comparable<RoiObject> {
     int xCord;
+    Bitmap bmp;
 
-    public RoiObject(int xCord,String photoName, Bitmap bmp) {
+    public RoiObject(int xCord,Bitmap bmp) {
         this.xCord = xCord;
+        this.bmp = bmp;
     }
 
     public int compareTo(RoiObject roi) {
