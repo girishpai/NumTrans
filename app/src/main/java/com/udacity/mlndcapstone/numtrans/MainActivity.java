@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        //Uncomment this section if you want to test the App on 2 photos provided
+        //Useful if you don't have access to a whiteboard
+
         /*
         Bitmap origImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.photo2);
         Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.photo2);
@@ -77,10 +80,14 @@ public class MainActivity extends AppCompatActivity {
         */
 
 
+
+
         mResultText = (TextView) findViewById(R.id.text_result);
         mPhoto = (ImageView) findViewById(R.id.photo);
         mNextButton = (Button) findViewById(R.id.next_button);
 
+        //Next button in the app to slide between original photo,pre-processed photo and
+        //result photo with boxes around digits
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         mIOUtils.saveImage(bm,photoName);
     }
 
+    //Once the photo is clicked inside the Camera App it comes to this task
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ACTIVITY_START_CAMERA_APP && resultCode == RESULT_OK) {
@@ -125,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //This is the task called when the take Photo button is pressed.
+    //Transfers control to Camera Application of the phone
     public void takePhoto(View view) {
 
         //clearData();

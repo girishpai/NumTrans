@@ -24,6 +24,7 @@ import java.util.Collections;
  */
 public class ImageProcessor {
 
+    IOUtils mIOUtils = new IOUtils();
     private static final String TAG = "ImageProcessor";
     ArrayList<RoiObject> mRoiImages = new ArrayList<RoiObject>(50);
     String mResultText = "";
@@ -43,13 +44,15 @@ public class ImageProcessor {
         Mat imgToProcess = new Mat (image.getWidth(), image.getHeight(), CvType.CV_8UC1);
         Mat imgToProcessCanny = new Mat (image.getWidth(), image.getHeight(), CvType.CV_8UC1);
         Utils.bitmapToMat(image,imgToProcess);
+
+        //Resize image to manageable size
         Imgproc.resize(imgToProcess, imgToProcess, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.resize(origImageMatrix, origImageMatrix, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.resize(tempImageMat, tempImageMat, sz,0,0,Imgproc.INTER_NEAREST);
         Imgproc.cvtColor(imgToProcess, imgToProcess, Imgproc.COLOR_BGR2GRAY);
+
+
         Imgproc.GaussianBlur(imgToProcess,imgToProcess,new Size(3,3),0);
-
-
         Mat imgGrayInv = new Mat(sz,CvType.CV_8UC1,new Scalar(255.0));
 
         Core.subtract(imgGrayInv,imgToProcess,imgGrayInv);
@@ -197,6 +200,7 @@ public class ImageProcessor {
             Imgproc.threshold(roiImage, roiImage, mean, 255, Imgproc.THRESH_BINARY_INV);
             Bitmap tempImage = Bitmap.createBitmap(roiImage.cols(), roiImage.rows(), conf);
             Utils.matToBitmap(roiImage, tempImage);
+            //mIOUtils.saveImage(tempImage,"roi" + contourIdx + ".jpg");
             RoiObject roiObject = new RoiObject(xCord,tempImage);
             mRoiImages.add(roiObject);
         }

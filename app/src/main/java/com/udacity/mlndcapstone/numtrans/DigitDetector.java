@@ -27,7 +27,7 @@ public class DigitDetector {
         }
 
         // model from expert tutorial
-        int ret = init(assetManager, "file:///android_asset/expert-graph.pb");
+        int ret = init(assetManager, "file:///android_asset/NumTrans_Graph.pb");
 
         return ret >= 0;
     }
