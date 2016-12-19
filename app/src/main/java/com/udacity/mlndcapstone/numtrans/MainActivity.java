@@ -3,6 +3,7 @@ package com.udacity.mlndcapstone.numtrans;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -82,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         mResultText = (TextView) findViewById(R.id.text_result);
         mPhoto = (ImageView) findViewById(R.id.photo);
         mNextButton = (Button) findViewById(R.id.next_button);
@@ -116,10 +119,14 @@ public class MainActivity extends AppCompatActivity {
 
     //Once the photo is clicked inside the Camera App it comes to this task
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if (requestCode == ACTIVITY_START_CAMERA_APP && resultCode == RESULT_OK) {
-            Bitmap bitmap = BitmapFactory.decodeFile(mImageFileLocation);
-            Bitmap origImage = BitmapFactory.decodeFile(mImageFileLocation);
+
+            //Bitmap bitmap = BitmapFactory.decodeFile(mImageFileLocation);
+            //Bitmap origImage =
+            Bitmap bitmap = mIOUtils.getCameraPhoto("photo.jpg");
+
+            Bitmap origImage = mIOUtils.getCameraPhoto("photo.jpg");
             //savePhoto(bitmap,"photo.jpg");
             Mat imgToProcess = mImgProcessor.preProcessImage(bitmap);
             Bitmap.createScaledBitmap(bitmap,imgToProcess.width(),imgToProcess.height(),false);
@@ -130,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
             Utils.matToBitmap(boundImage.clone(),bitmap);
             savePhoto(bitmap,"photo_bound.jpg");
 
+
+
         }
     }
 
@@ -137,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
     //Transfers control to Camera Application of the phone
     public void takePhoto(View view) {
 
-        //clearData();
         Intent callCameraApplicationIntent = new Intent();
         callCameraApplicationIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
         File photoFile = null;
@@ -148,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
         callCameraApplicationIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
         startActivityForResult(callCameraApplicationIntent,ACTIVITY_START_CAMERA_APP);
     }
+
+
 
 
 }

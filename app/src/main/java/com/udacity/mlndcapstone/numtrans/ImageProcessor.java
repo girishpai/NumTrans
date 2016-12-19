@@ -141,6 +141,7 @@ public class ImageProcessor {
 
 
     public Mat segmentAndDetect(Mat imgToProcess,Bitmap origImage,DigitDetector digitDetector) {
+        mResultText = "";
         ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Mat hierarchy = new Mat();
         Mat origImageMatrix = new Mat(origImage.getWidth(), origImage.getHeight(), CvType.CV_8UC3);
@@ -153,9 +154,9 @@ public class ImageProcessor {
             // Minimum size allowed for consideration
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
 
-            if (contourArea < 500.0) {
-                continue;
-            }
+            //if (contourArea < 500.0) {
+            //    continue;
+            //}
             Log.d(TAG,"CountourAra = " + contourArea);
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
@@ -173,8 +174,8 @@ public class ImageProcessor {
             if ((rect.y + rect.height > origImageMatrix.rows()) || (rect.x + rect.width > origImageMatrix.cols())) {
                 continue;
             }
-            int length1 = (int) (rect.height * 1.0);
-            int length2 = (int) (rect.width * 1.0);
+            int length1 = (int) (rect.height * 2.5);
+            int length2 = (int) (rect.width * 2.5);
             int pt1 = (int) (rect.y + Math.floor(rect.height / 2.0) - Math.floor(length1 / 2.0));
             int pt2 = (int) (rect.x + Math.floor(rect.width / 2.0) - Math.floor(length2 / 2.0));
             MatOfDouble matMean = new MatOfDouble();
@@ -185,6 +186,8 @@ public class ImageProcessor {
             roiImage = imgToProcess.submat(rect.y,rect.y + rect.height ,rect.x,rect.x + rect.width );
             int xCord = rect.x;
             //roiImage = imgToProcess.submat(pt1, pt1 + length1, pt2, pt2 + length2);
+            //roiImage = imgToProcess.submat(rect.y,rect.y + length1 ,rect.x,rect.x + length2 );
+            //int xCord = pt2;
             Core.copyMakeBorder(roiImage, roiImage, 100, 100, 100, 100, Core.BORDER_ISOLATED);
 
             Mat resizeimage = new Mat();
@@ -203,6 +206,7 @@ public class ImageProcessor {
             //mIOUtils.saveImage(tempImage,"roi" + contourIdx + ".jpg");
             RoiObject roiObject = new RoiObject(xCord,tempImage);
             mRoiImages.add(roiObject);
+            mIOUtils.saveImage(tempImage,"roi.jpg");
         }
 
 

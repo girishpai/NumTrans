@@ -2,6 +2,8 @@ package com.udacity.mlndcapstone.numtrans;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.os.Environment;
 import android.util.Log;
 
@@ -62,11 +64,60 @@ public class IOUtils {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         String fileName = temp.getAbsolutePath();
         Bitmap bitmap = BitmapFactory.decodeFile(fileName, options);
-        return bitmap;
+
+        return getResizedBitmap(bitmap,640,480);
 
     }
 
+    public static Bitmap getResizedBitmap(Bitmap image, int newHeight, int newWidth) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // create a matrix for the manipulation
+        Matrix matrix = new Matrix();
+        // resize the bit map
+        matrix.postScale(scaleWidth, scaleHeight);
+        // recreate the new Bitmap
+        Bitmap resizedBitmap = Bitmap.createBitmap(image, 0, 0, width, height,
+                matrix, false);
+        return resizedBitmap;
+    }
 
+    public Bitmap getCameraPhoto(String filename) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        String extStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+        File temp = new File(extStorageDirectory,filename);
+        String file = temp.getAbsolutePath();
+        BitmapFactory.decodeFile(file, bounds);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        Bitmap bm = BitmapFactory.decodeFile(file, opts);
+        bm = getResizedBitmap(bm,2500,2500);
+        bounds.outHeight = 2500;
+        bounds.outWidth = 2500;
+        try {
+            ExifInterface exif = new ExifInterface(file);
+
+
+            String orientString = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            int orientation = orientString != null ? Integer.parseInt(orientString) : ExifInterface.ORIENTATION_NORMAL;
+
+            int rotationAngle = 0;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_90) rotationAngle = 90;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_180) rotationAngle = 180;
+            if (orientation == ExifInterface.ORIENTATION_ROTATE_270) rotationAngle = 270;
+
+            Matrix matrix = new Matrix();
+            matrix.setRotate(rotationAngle, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0, bounds.outWidth, bounds.outHeight, matrix, true);
+            return rotatedBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
 
 
 }
