@@ -6,6 +6,9 @@ import java.util.HashMap;
 
 /**
  * Created by girishpai on 11/4/16.
+ * Borrowed from http://www.programcreek.com/2014/05/leetcode-integer-to-english-words-java/
+ * This is to reduce development time as the main focus of this project was Deep Learning / Computer
+ * Vision.
  */
 public class NumberToWordConv {
     HashMap<Integer, String> map;

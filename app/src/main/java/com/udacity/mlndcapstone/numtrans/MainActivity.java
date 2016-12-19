@@ -63,8 +63,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        //Uncomment this section if you want to test the App on 2 photos provided
-        //Useful if you don't have access to a whiteboard
+        //Uncomment this section to locally test openCV / detector interface without calling camera
 
         /*
         Bitmap origImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.photo2);
@@ -122,18 +121,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if (requestCode == ACTIVITY_START_CAMERA_APP && resultCode == RESULT_OK) {
 
-            //Bitmap bitmap = BitmapFactory.decodeFile(mImageFileLocation);
-            //Bitmap origImage =
+            //Get the photo clicked by the camera - reduced size to ensure does not make
+            //the app crash in low memory situation - was a BUG initially which was not caught
+            // when app was run on high memory Nexus 6p phone (64 GB). When app was re-run on Samsung
+            // S5 with 32 GB it crashed dues to insufficient memory.
             Bitmap bitmap = mIOUtils.getCameraPhoto("photo.jpg");
-
             Bitmap origImage = mIOUtils.getCameraPhoto("photo.jpg");
-            //savePhoto(bitmap,"photo.jpg");
+
+            //Preproces the image to remove noise, amplify the region of interest with the number
+            //by making it bright white and make the background completely black.
             Mat imgToProcess = mImgProcessor.preProcessImage(bitmap);
+
+            //Scale down the bitmap based on the processing height and width (640 x 480)
             Bitmap.createScaledBitmap(bitmap,imgToProcess.width(),imgToProcess.height(),false);
             Bitmap.createScaledBitmap(origImage,imgToProcess.width(),imgToProcess.height(),false);
+
+            //Convert to bitmap and save the photo to display in the app.
             Utils.matToBitmap(imgToProcess.clone(),bitmap);
             savePhoto(bitmap,"photo_preprocess.jpg");
-            Mat boundImage = mImgProcessor.segmentAndDetect(imgToProcess,origImage,mDetector);
+
+            //Pass the preprocessed image to perform segmentation and recogntion. This also
+            //overlays rectangular boxes on the segmented digits.
+            Mat boundImage = mImgProcessor.segmentAndRecognize(imgToProcess,origImage,mDetector);
             Utils.matToBitmap(boundImage.clone(),bitmap);
             savePhoto(bitmap,"photo_bound.jpg");
 

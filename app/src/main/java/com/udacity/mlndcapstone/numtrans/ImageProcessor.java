@@ -21,15 +21,23 @@ import java.util.Collections;
 
 /**
  * Created by girishpai on 11/4/16.
+ * This is the main class which does all the pre-processing and segmentation.
+ * Heavily used Computer Vision / Image Processing concepts like Edge Detection,
+ * Contour Finding, Filtering etc.
+ * Also calls the detector class to perform recognition of the segmented digits
  */
 public class ImageProcessor {
 
     IOUtils mIOUtils = new IOUtils();
     private static final String TAG = "ImageProcessor";
     ArrayList<RoiObject> mRoiImages = new ArrayList<RoiObject>(50);
-    String mResultText = "";
+    //StringBuilder mResultDigits;
+    String mResultText;
     NumberToWordConv mNumConverter = new NumberToWordConv();
 
+
+    // Amplify the region of interest by making the number bright and
+    // background black. This removes noise due to shadows / insufficient lighting.
     public Mat preProcessImage(Bitmap image) {
         Size sz = new Size(640, 480);
         ArrayList<Rect> rects;
@@ -52,11 +60,15 @@ public class ImageProcessor {
         Imgproc.cvtColor(imgToProcess, imgToProcess, Imgproc.COLOR_BGR2GRAY);
 
 
+        //Remove noise using Gaussian filter
+        http://docs.opencv.org/2.4/doc/tutorials/imgproc/gausian_median_blur_bilateral_filter/gausian_median_blur_bilateral_filter.html
         Imgproc.GaussianBlur(imgToProcess,imgToProcess,new Size(3,3),0);
+
+
         Mat imgGrayInv = new Mat(sz,CvType.CV_8UC1,new Scalar(255.0));
 
+        //Invert the brightness - make lighter pixel dark and vice versa.
         Core.subtract(imgGrayInv,imgToProcess,imgGrayInv);
-
         Imgproc.Canny(imgToProcess,imgToProcessCanny,13,39,3,false);
 
         rects = this.boundingBox(imgToProcessCanny);
@@ -84,6 +96,9 @@ public class ImageProcessor {
                 }
             }
 
+            // Using the algorithm in the following paper to get the region of interest
+            //http://web.stanford.edu/class/cs231m/projects/final-report-yang-pu.pdf
+
             Mat aux = tempImageMat.colRange(left, right).rowRange(top, bottom);
             MatOfDouble matMean = new MatOfDouble();
             MatOfDouble matStd = new MatOfDouble();
@@ -93,8 +108,6 @@ public class ImageProcessor {
             Core.meanStdDev(roiImage, matMean, matStd);
             mean = matMean.toArray()[0];
             std = matStd.toArray()[0];
-
-            //Imgproc.threshold(roiImage, roiImage, mean + std / 2.0, 255, Imgproc.THRESH_BINARY);
             Imgproc.threshold(roiImage, roiImage,mean + std,255, Imgproc.THRESH_BINARY);
             roiImage.copyTo(aux);
         }
@@ -140,8 +153,9 @@ public class ImageProcessor {
 
 
 
-    public Mat segmentAndDetect(Mat imgToProcess,Bitmap origImage,DigitDetector digitDetector) {
-        mResultText = "";
+    public Mat segmentAndRecognize(Mat imgToProcess,Bitmap origImage,DigitDetector digitDetector) {
+        StringBuilder ResultDigits  = new StringBuilder("");
+        mRoiImages.clear();
         ArrayList<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Mat hierarchy = new Mat();
         Mat origImageMatrix = new Mat(origImage.getWidth(), origImage.getHeight(), CvType.CV_8UC3);
@@ -151,9 +165,11 @@ public class ImageProcessor {
         Imgproc.findContours(imgToProcess, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
 
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
-            // Minimum size allowed for consideration
+
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
 
+            //In case of white board / surface having a lot of small dark spots
+            // Use this to filter out very small spots.
             //if (contourArea < 500.0) {
             //    continue;
             //}
@@ -161,6 +177,7 @@ public class ImageProcessor {
 
             MatOfPoint2f approxCurve = new MatOfPoint2f();
             MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(contourIdx).toArray());
+
             //Processing on mMOP2f1 which is in type MatOfPoint2f
             double approxDistance = Imgproc.arcLength(contour2f, true) * 0.02;
             Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
@@ -174,10 +191,8 @@ public class ImageProcessor {
             if ((rect.y + rect.height > origImageMatrix.rows()) || (rect.x + rect.width > origImageMatrix.cols())) {
                 continue;
             }
-            int length1 = (int) (rect.height * 2.5);
-            int length2 = (int) (rect.width * 2.5);
-            int pt1 = (int) (rect.y + Math.floor(rect.height / 2.0) - Math.floor(length1 / 2.0));
-            int pt2 = (int) (rect.x + Math.floor(rect.width / 2.0) - Math.floor(length2 / 2.0));
+
+
             MatOfDouble matMean = new MatOfDouble();
             MatOfDouble matStd = new MatOfDouble();
             Double mean;
@@ -185,9 +200,6 @@ public class ImageProcessor {
 
             roiImage = imgToProcess.submat(rect.y,rect.y + rect.height ,rect.x,rect.x + rect.width );
             int xCord = rect.x;
-            //roiImage = imgToProcess.submat(pt1, pt1 + length1, pt2, pt2 + length2);
-            //roiImage = imgToProcess.submat(rect.y,rect.y + length1 ,rect.x,rect.x + length2 );
-            //int xCord = pt2;
             Core.copyMakeBorder(roiImage, roiImage, 100, 100, 100, 100, Core.BORDER_ISOLATED);
 
             Mat resizeimage = new Mat();
@@ -195,7 +207,6 @@ public class ImageProcessor {
             Imgproc.resize(roiImage, roiImage, sz);
 
 
-            //Imgproc.dilate(roiImage,roiImage,new Mat(3,3,CvType.CV_8UC1));
             Core.meanStdDev(roiImage, matMean, matStd);
             mean = matMean.toArray()[0];
             std = matStd.toArray()[0];
@@ -203,32 +214,35 @@ public class ImageProcessor {
             Imgproc.threshold(roiImage, roiImage, mean, 255, Imgproc.THRESH_BINARY_INV);
             Bitmap tempImage = Bitmap.createBitmap(roiImage.cols(), roiImage.rows(), conf);
             Utils.matToBitmap(roiImage, tempImage);
-            //mIOUtils.saveImage(tempImage,"roi" + contourIdx + ".jpg");
             RoiObject roiObject = new RoiObject(xCord,tempImage);
             mRoiImages.add(roiObject);
-            mIOUtils.saveImage(tempImage,"roi.jpg");
+
+            //Uncomment only for debugging
+            //mIOUtils.saveImage(tempImage,"roi.jpg");
         }
 
 
-
+        // To read the digits from left to right - sort as per the X coordinates.
         Collections.sort(mRoiImages);
 
+        //Set the max number of digits to read to 9 (arbitrarily chosen)
         int max = (mRoiImages.size() > 9) ? 9 : mRoiImages.size();
         for (int i = 0; i < max; i++) {
             RoiObject roi = mRoiImages.get(i);
             int [] pixels = getPixelData(roi.bmp);
 
+            //Call the native detectDigit method. This is where the tensorflow graph is invoked.
+            // The graph was created using python code (as part of the training).
             int digit = digitDetector.detectDigit(pixels);
 
             Log.i(TAG, "digit =" + digit);
 
-            mResultText = mResultText.concat("" + digit);
+            ResultDigits.append("" + digit);
         }
 
-        int number = Integer.parseInt(mResultText);
+        int number = Integer.parseInt(ResultDigits.toString());
         Log.i(TAG,"Number = :" + number);
         mResultText = mNumConverter.numberToWords(number);
-
 
         return origImageMatrix;
     }
@@ -237,6 +251,7 @@ public class ImageProcessor {
         return this.mResultText;
     }
 
+    // Converting the bitmap into pixel array which is sent to the detector (Native code).
     private int [] getPixelData(Bitmap tempImage) {
         Log.d(TAG,"Image Size : " + tempImage.getWidth() + " , " + tempImage.getHeight());
         int [] pixels = new int[tempImage.getWidth() * tempImage.getHeight()];

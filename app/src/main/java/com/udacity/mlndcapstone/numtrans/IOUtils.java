@@ -14,6 +14,7 @@ import java.io.IOException;
 
 /**
  * Created by girishpai on 11/4/16.
+ * Utils class to perform file handling
  */
 public class IOUtils {
 
@@ -69,6 +70,7 @@ public class IOUtils {
 
     }
 
+    // Resizes a bitmap to new size.
     public static Bitmap getResizedBitmap(Bitmap image, int newHeight, int newWidth) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -84,6 +86,9 @@ public class IOUtils {
         return resizedBitmap;
     }
 
+    //Depending on phone, the photo taken on the camera might be in landscape or portrait.
+    // This method converts the photo into portrait and returns a reduced size image to take care
+    // of low memory situations.
     public Bitmap getCameraPhoto(String filename) {
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
