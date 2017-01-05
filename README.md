@@ -47,4 +47,6 @@ adb install -r NumTrans.apk
 The app will be loaded initially with two buttons. Click the Take Photo button. This should redirect to the Camera App of the phone.
 Since the App was tested on only numbers written on a WhiteBoard, I recommend trying it on that first.  
 
+Once the photo is clicked, it will return to the app. Click on the next photo button which will show you the original, pre-processed image and the final
+image with segmented digits and the word translation. 
 
