@@ -6,6 +6,16 @@ Will only work with images taken on a light background (like a whiteboard)
 Trainer script written in Python using Tensorflow APIs to create the deep model. Located in trainer/
 - `Trainer.ipynb`
 
+The Java code for the app is located in
+app/src/main/java/com/udacity/mlndcapstone/numtrans/
+- `DigitDetector.java`
+- `IOUtils.java`
+- `ImageProcessor.java`
+- `MainActivity.java`
+- `NumberToWordConv.java`
+- `RoiObject.java`
+
+
 ## Requirements
 
 This project requires **Python 2.7** and the following installed:
