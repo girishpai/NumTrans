@@ -2,6 +2,11 @@
 Using deep learning and computer vision to recognize and translate images into word form of multi digit numbers.
 Will only work with images taken on a light background (like a whiteboard)
 
+## Report 
+Due to formatting issues while converting to PDF format, please go to the following link to access the rport for this project. 
+
+https://docs.google.com/document/d/1qpQmtVZ_7zrX1p2IG9v8KHbXRqBmGPrC-Hn8zdmBjZU/edit?usp=sharing
+
 ## Source Code
 Trainer script written in Python using Tensorflow APIs to create the deep model. Located in trainer/
 - `Trainer.ipynb`
