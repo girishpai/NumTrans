@@ -3,7 +3,7 @@ Using deep learning and computer vision to recognize and translate images into w
 Will only work with images taken on a light background (like a whiteboard)
 
 ## Report 
-Due to formatting issues while converting to PDF format, please go to the following link to access the rport for this project. 
+Due to formatting issues while converting to PDF format, please go to the following link to access the report for this project. 
 
 https://docs.google.com/document/d/1qpQmtVZ_7zrX1p2IG9v8KHbXRqBmGPrC-Hn8zdmBjZU/edit?usp=sharing
 
