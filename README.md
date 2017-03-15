@@ -1,5 +1,5 @@
 # MLND Capstone - Number Translator Android App. 
-Using deep learning and computer vision to recognize and translate images into word form of multi digit numbers.
+Using Deep Learning and Computer Vision to recognize and translate images into word form of multi digit numbers.
 Will only work with images taken on a light background (like a whiteboard)
 
 ## Report 
