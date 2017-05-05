@@ -2,8 +2,7 @@
 
 ## Overview 
 
-<img src="img1_readme.png" width="300">
-
+![Example](img1_readme.png)
 
 This is an android application which can translate images of multi-digit numbers taken from phone camera into word form as shown above. 
 
