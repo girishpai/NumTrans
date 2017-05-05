@@ -1,6 +1,23 @@
 # MLND Capstone - Number Translator Android App. 
-Using Deep Learning and Computer Vision to recognize and translate images into word form of multi digit numbers.
-Will only work with images taken on a light background (like a whiteboard)
+
+## Overview 
+
+<img src="img1_readme.png" width="300">
+
+
+This is an android application which can translate images of multi-digit numbers taken from phone camera into word form as shown above. 
+
+The project had the following parts.
+
+1) Computer vision techniques using OpenCV for Android (thresholding, canny edge detection, contour selection etc) to properly segment each digit. The application was robust to various lighting conditions and also to numbers written in different colors and orientation. 
+
+2) Trained a Deep Convolutional Neural Network using Tensorflow on the MNIST dataset. Got an accuracy of 99.2%. 
+
+3) Integrated the Tensorflow model with the Android application using Java Native Interface. 
+
+4) Pass the segmented digits to the model for recognition. 
+
+This app will currently only work with images taken on a light background (like a whiteboard)
 
 ## Report 
 Due to formatting issues while converting to PDF format, please go to the following link to access the report for this project. 
